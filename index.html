@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prashant Khanal — Graphic Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=Crimson+Pro:ital,wght@0,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060608;--surface:#0d0d12;--card:#12121a;
+  --border:rgba(255,255,255,0.05);
+  --gold:#c8a84b;--gold2:#e8c96a;
+  --text:#eeeae2;--muted:#666680;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;overflow-x:hidden;cursor:none}
+
+/* Cursor */
+#cur{position:fixed;width:9px;height:9px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s}
+#cur-ring{position:fixed;width:34px;height:34px;border:1px solid rgba(200,168,75,.45);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .32s cubic-bezier(.23,1,.32,1)}
+body.hov #cur{width:22px;height:22px}
+body.hov #cur-ring{width:52px;height:52px;border-color:var(--gold)}
+
+/* Canvas fixed behind */
+#cv{position:fixed;inset:0;z-index:0;pointer-events:none}
+#cv canvas{width:100%;height:100%}
+
+/* Scroll body */
+#sb{position:relative;z-index:10}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:20px 60px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(6,6,8,.92),transparent);backdrop-filter:blur(10px)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:4px;color:var(--gold);text-decoration:none}
+.nl{display:flex;gap:36px;list-style:none}
+.nl a{color:var(--muted);text-decoration:none;font-size:11px;letter-spacing:3px;text-transform:uppercase;transition:color .3s;font-weight:600}
+.nl a:hover{color:var(--gold)}
+.ndot{width:7px;height:7px;background:var(--gold);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,168,75,.5)}50%{box-shadow:0 0 0 9px rgba(200,168,75,0)}}
+
+/* HERO */
+#hero{height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 60px;position:relative;overflow:hidden}
+.h-tag{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:24px}
+.h-tag::after{content:'';flex:1;max-width:60px;height:1px;background:var(--gold)}
+.h-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(70px,10vw,155px);line-height:.88;letter-spacing:-2px}
+.h-name .l1{color:var(--text);display:block}
+.h-name .l2{color:transparent;-webkit-text-stroke:1px rgba(200,168,75,.55);display:block}
+.h-sub{font-family:'Crimson Pro',serif;font-style:italic;font-size:23px;color:var(--muted);margin-top:20px;margin-bottom:36px}
+.h-scroll{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-top:40px}
+.sline{width:54px;height:1px;background:var(--muted);position:relative;overflow:hidden}
+.sline::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:var(--gold);animation:srun 2s linear infinite}
+@keyframes srun{to{left:100%}}
+.h-badge{position:absolute;right:80px;bottom:100px;width:115px;height:115px;border:1px solid rgba(200,168,75,.2);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;animation:spinSlow 14s linear infinite}
+.h-badge span{font-family:'Bebas Neue',sans-serif;font-size:38px;color:var(--gold);line-height:1}
+.h-badge p{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+@keyframes spinSlow{to{transform:rotate(360deg)}}
+
+/* Marquee */
+.mq-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 0;background:var(--card)}
+.mq-track{display:flex;white-space:nowrap;animation:mqrun 16s linear infinite}
+.mq-item{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:3px;color:var(--muted);padding:0 36px;border-right:1px solid var(--border);flex-shrink:0}
+.mq-item em{color:var(--gold);font-style:normal}
+@keyframes mqrun{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* BMW section */
+#bmws{height:200vh;position:relative}
+.bmw-stick{position:sticky;top:0;height:100vh;display:flex;align-items:center;justify-content:space-between;padding:0 60px;pointer-events:none}
+.bmw-l,.bmw-r{width:240px;z-index:10}
+.bmw-r{text-align:right}
+.bml{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
+.bmh{font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:.95;color:var(--text)}
+.bmb{font-size:13px;color:var(--muted);line-height:1.8;margin-top:12px}
+.specs{display:flex;flex-direction:column;gap:18px;margin-top:22px}
+.sp-n{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--gold);line-height:1}
+.sp-l{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+
+/* Sections */
+section{padding:100px 60px;position:relative}
+.stag{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:12px}
+.stag::before{content:'';width:28px;height:1px;background:var(--gold)}
+.stitle{font-family:'Bebas Neue',sans-serif;font-size:clamp(46px,6vw,86px);line-height:.9;color:var(--text)}
+
+/* About */
+#about{background:var(--surface)}
+.ag{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;margin-top:60px}
+.adesc{font-size:15px;line-height:1.9;color:var(--muted)}
+.adesc strong{color:var(--text)}
+.ctags{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}
+.ctag{padding:9px 16px;border:1px solid rgba(200,168,75,.18);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);transition:all .3s;background:var(--card);position:relative;overflow:hidden}
+.ctag::before{content:'';position:absolute;inset:0;background:rgba(200,168,75,.06);opacity:0;transition:opacity .3s}
+.ctag:hover{color:var(--gold);border-color:rgba(200,168,75,.5);transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.4)}
+.ctag:hover::before{opacity:1}
+
+/* Skill bars */
+.sbars{margin-top:40px}
+.sr{margin-bottom:22px}
+.st{display:flex;justify-content:space-between;margin-bottom:8px}
+.sn{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text);font-weight:600}
+.sp{font-size:11px;color:var(--gold);font-weight:700}
+.sb{height:2px;background:rgba(255,255,255,.05);position:relative}
+.sf{height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width 1.4s cubic-bezier(.23,1,.32,1);position:relative}
+.sf::after{content:'';position:absolute;right:-1px;top:-3px;width:8px;height:8px;background:var(--gold2);border-radius:50%;box-shadow:0 0 10px var(--gold)}
+
+/* Timeline */
+#exp{background:var(--bg)}
+.tl{position:relative;margin-top:60px;padding-left:1px}
+.tl::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,var(--gold),rgba(200,168,75,0))}
+.ti{position:relative;padding:30px 0 30px 40px;border-bottom:1px solid var(--border);transition:all .4s;cursor:none}
+.ti::before{content:'';position:absolute;left:-5px;top:36px;width:11px;height:11px;background:var(--bg);border:1px solid var(--gold);border-radius:50%;transition:all .3s}
+.ti:hover::before{background:var(--gold);box-shadow:0 0 18px rgba(200,168,75,.6)}
+.ti:hover{background:rgba(200,168,75,.02);padding-left:50px}
+.ty{font-size:10px;letter-spacing:3px;color:var(--gold);font-weight:700;margin-bottom:6px}
+.tr{font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px}
+.tc{font-size:13px;color:var(--gold);margin-bottom:10px}
+.td{font-size:14px;color:var(--muted);line-height:1.7;max-width:560px}
+
+/* Services */
+#svc{background:var(--surface)}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:60px;background:var(--border)}
+.sc{background:var(--card);padding:38px 30px;position:relative;overflow:hidden;transition:all .5s cubic-bezier(.23,1,.32,1)}
+.sc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0);transition:transform .4s}
+.sc:hover{background:rgba(200,168,75,.03);transform:translateY(-6px)}
+.sc:hover::after{transform:scaleX(1)}
+.scn{font-family:'Bebas Neue',sans-serif;font-size:80px;color:rgba(200,168,75,.05);position:absolute;top:8px;right:14px;line-height:1;user-select:none;pointer-events:none}
+.si{font-size:28px;margin-bottom:20px;display:block}
+.st2{font-size:16px;font-weight:800;color:var(--text);margin-bottom:12px}
+.sd{font-size:13px;color:var(--muted);line-height:1.8}
+
+/* Contact */
+#ct{background:var(--bg);text-align:center;position:relative;overflow:hidden}
+.cghost{font-family:'Bebas Neue',sans-serif;font-size:clamp(60px,13vw,160px);color:transparent;-webkit-text-stroke:1px rgba(200,168,75,.07);line-height:1;user-select:none;margin-bottom:-20px}
+.ctitle{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,6vw,78px);color:var(--text);margin-bottom:14px}
+.csub{font-family:'Crimson Pro',serif;font-style:italic;font-size:22px;color:var(--muted);margin-bottom:50px}
+.cg{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:46px}
+.cc{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);padding:18px 26px;text-decoration:none;color:var(--text);min-width:210px;transition:all .35s;position:relative;overflow:hidden}
+.cc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--gold);transform:scaleY(0);transition:transform .3s;transform-origin:bottom}
+.cc:hover{border-color:rgba(200,168,75,.3);background:rgba(200,168,75,.04);transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,.5)}
+.cc:hover::before{transform:scaleY(1)}
+.ci{width:42px;height:42px;background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.14);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.cl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.cv2{font-size:13px;font-weight:700}
+.loc{font-size:12px;color:var(--muted);letter-spacing:1px}
+
+/* Rings behind contact */
+.cring{position:absolute;top:50%;left:50%;border:1px solid rgba(200,168,75,.05);border-radius:50%;transform:translate(-50%,-50%);animation:spinSlow 24s linear infinite;pointer-events:none}
+
+/* WA */
+.wa{position:fixed;bottom:28px;right:28px;width:52px;height:52px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;z-index:400;box-shadow:0 4px 20px rgba(37,211,102,.35);transition:all .3s;cursor:none}
+.wa:hover{transform:scale(1.12);box-shadow:0 8px 30px rgba(37,211,102,.55)}
+.wa svg{width:26px;height:26px;fill:#fff}
+
+/* Footer */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:26px 60px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);letter-spacing:1px}
+footer a{color:var(--gold);text-decoration:none}
+
+/* Reveal */
+.rv{opacity:0;transform:translateY(36px);transition:opacity .8s ease,transform .8s ease}
+.rv.on{opacity:1;transform:translateY(0)}
+.rv:nth-child(2){transition-delay:.1s}
+.rv:nth-child(3){transition-delay:.2s}
+
+@media(max-width:860px){
+  nav{padding:16px 20px}.nl{display:none}
+  section,#hero{padding:70px 22px}
+  .ag{grid-template-columns:1fr}
+  .sg{grid-template-columns:1fr}
+  .bmw-stick{padding:0 16px}
+  .bmw-l,.bmw-r{width:120px}
+  .h-badge{right:16px;bottom:70px}
+  footer{flex-direction:column;gap:8px;text-align:center;padding:20px}
+  .cg{flex-direction:column;align-items:center}
+}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<div id="cv"><canvas id="three-canvas"></canvas></div>
+
+<!-- WhatsApp -->
+<a href="https://wa.me/9779864728714" target="_blank" class="wa">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<nav>
+  <a href="#hero" class="logo">PK.</a>
+  <ul class="nl">
+    <li><a href="#about">About</a></li>
+    <li><a href="#exp">Experience</a></li>
+    <li><a href="#svc">Services</a></li>
+    <li><a href="#ct">Contact</a></li>
+  </ul>
+  <div class="ndot"></div>
+</nav>
+
+<div id="sb">
+
+<!-- HERO -->
+<section id="hero">
+  <div class="h-tag">Available for Freelance</div>
+  <h1 class="h-name">
+    <span class="l1">PRASHANT</span>
+    <span class="l2">KHANAL</span>
+  </h1>
+  <p class="h-sub">Graphic Designer &amp; Visual Storyteller</p>
+  <div class="h-scroll"><span>Scroll to explore</span><div class="sline"></div></div>
+  <div class="h-badge"><span>1+</span><p>Years Exp</p></div>
+</section>
+
+<!-- MARQUEE -->
+<div class="mq-wrap">
+  <div class="mq-track">
+    <div class="mq-item">Logo Design <em>✦</em></div>
+    <div class="mq-item">Brand Identity <em>✦</em></div>
+    <div class="mq-item">Social Media <em>✦</em></div>
+    <div class="mq-item">Photography <em>✦</em></div>
+    <div class="mq-item">Videography <em>✦</em></div>
+    <div class="mq-item">Advertising <em>✦</em></div>
+    <div class="mq-item">Illustration <em>✦</em></div>
+    <div class="mq-item">Copywriting <em>✦</em></div>
+    <div class="mq-item">Logo Design <em>✦</em></div>
+    <div class="mq-item">Brand Identity <em>✦</em></div>
+    <div class="mq-item">Social Media <em>✦</em></div>
+    <div class="mq-item">Photography <em>✦</em></div>
+    <div class="mq-item">Videography <em>✦</em></div>
+    <div class="mq-item">Advertising <em>✦</em></div>
+    <div class="mq-item">Illustration <em>✦</em></div>
+    <div class="mq-item">Copywriting <em>✦</em></div>
+  </div>
+</div>
+
+<!-- BMW SCROLL SECTION -->
+<section id="bmws">
+  <div class="bmw-stick">
+    <div class="bmw-l">
+      <div class="bml">Precision. Craft. Design.</div>
+      <div class="bmh">BUILT FOR PERFORMANCE</div>
+      <div class="bmb">Like a fine-tuned machine, every design decision is deliberate — nothing left to chance.</div>
+      <div class="specs">
+        <div><div class="sp-n">100%</div><div class="sp-l">Commitment</div></div>
+        <div><div class="sp-n">0ms</div><div class="sp-l">Compromise</div></div>
+      </div>
+    </div>
+    <div style="width:280px"></div>
+    <div class="bmw-r">
+      <div class="bml">Identity. Vision. Story.</div>
+      <div class="bmh">DRIVEN BY CREATIVITY</div>
+      <div class="bmb">Brands that move people begin with a designer who understands what drives them.</div>
+      <div class="specs" style="align-items:flex-end">
+        <div style="text-align:right"><div class="sp-n">15+</div><div class="sp-l">Projects Done</div></div>
+        <div style="text-align:right"><div class="sp-n">5+</div><div class="sp-l">Happy Clients</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="stag">Who I Am</div>
+  <h2 class="stitle">DESIGN IS<br>MY LANGUAGE</h2>
+  <div class="ag">
+    <div>
+      <p class="adesc rv">I'm <strong>Prashant Khanal</strong>, a Graphic Designer based in Srijananagar, Bhaktapur. Currently serving as <strong>Senior Graphic Designer</strong> at A.S Cube Liquor Hub while pursuing a <strong>Bachelor's in Information Technology</strong>.</p>
+      <p class="adesc rv" style="margin-top:20px">My approach blends strategic thinking with raw creativity — building brands that don't just look good, but <strong>perform and connect</strong>.</p>
+      <div class="ctags rv">
+        <div class="ctag">Logo Design</div><div class="ctag">Branding</div>
+        <div class="ctag">Illustration</div><div class="ctag">Photography</div>
+        <div class="ctag">Videography</div><div class="ctag">Advertising</div>
+        <div class="ctag">Copywriting</div><div class="ctag">Teaching</div>
+      </div>
+    </div>
+    <div class="sbars rv">
+      <div class="sr"><div class="st"><span class="sn">Graphic & Web Design</span><span class="sp">90%</span></div><div class="sb"><div class="sf" style="width:0" data-w="90%"></div></div></div>
+      <div class="sr"><div class="st"><span class="sn">Advertising & Branding</span><span class="sp">85%</span></div><div class="sb"><div class="sf" style="width:0" data-w="85%"></div></div></div>
+      <div class="sr"><div class="st"><span class="sn">Photography & Editing</span><span class="sp">80%</span></div><div class="sb"><div class="sf" style="width:0" data-w="80%"></div></div></div>
+      <div class="sr"><div class="st"><span class="sn">Illustration</span><span class="sp">75%</span></div><div class="sb"><div class="sf" style="width:0" data-w="75%"></div></div></div>
+      <div class="sr"><div class="st"><span class="sn">Videography</span><span class="sp">70%</span></div><div class="sb"><div class="sf" style="width:0" data-w="70%"></div></div></div>
+      <div class="sr"><div class="st"><span class="sn">Copywriting</span><span class="sp">78%</span></div><div class="sb"><div class="sf" style="width:0" data-w="78%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="exp">
+  <div class="stag">Career Path</div>
+  <h2 class="stitle">EXPERIENCE<br>&amp; EDUCATION</h2>
+  <div class="tl">
+    <div class="ti rv"><div class="ty">2025 — PRESENT</div><div class="tr">Senior Graphic Designer</div><div class="tc">A.S Cube Liquor Hub · Bhaktapur</div><div class="td">Leading the full design and social media team. Building brand identity, campaign strategy, and visual language that speaks to the modern Nepali consumer.</div></div>
+    <div class="ti rv"><div class="ty">2025 — 2026</div><div class="tr">Social Media Manager</div><div class="tc">A.S Cube Liquor Hub · Bhaktapur</div><div class="td">Orchestrated end-to-end social campaigns — from concept to scheduling. Managed team timelines, content calendars, and brand voice consistency.</div></div>
+    <div class="ti rv"><div class="ty">2025 — 2026</div><div class="tr">Home Tutor</div><div class="tc">Private · Srijananagar</div><div class="td">Delivered one-on-one academic tutoring for 1 year with creative and structured teaching methods.</div></div>
+    <div class="ti rv" style="border-bottom:none"><div class="ty">2026 — RUNNING</div><div class="tr">Bachelor's in Information Technology</div><div class="tc">Bhaktapur Multiple College</div><div class="td">Merging technical knowledge with design expertise to build a multidisciplinary creative edge.</div></div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="svc">
+  <div class="stag">What I Do</div>
+  <h2 class="stitle">SERVICES</h2>
+  <div class="sg">
+    <div class="sc rv"><div class="scn">01</div><span class="si">🎨</span><div class="st2">Brand Identity Design</div><div class="sd">Logos, typography systems, and complete visual identities that make brands unforgettable from first glance.</div></div>
+    <div class="sc rv"><div class="scn">02</div><span class="si">📱</span><div class="st2">Social Media Design</div><div class="sd">Scroll-stopping posts, campaign visuals, and consistent branding that grows engagement organically.</div></div>
+    <div class="sc rv"><div class="scn">03</div><span class="si">📸</span><div class="st2">Photography & Editing</div><div class="sd">Professional brand photography with expert post-processing — every pixel deliberate.</div></div>
+    <div class="sc rv"><div class="scn">04</div><span class="si">🎬</span><div class="st2">Videography</div><div class="sd">Cinematic brand videos and commercial content that move audiences and drive real results.</div></div>
+    <div class="sc rv"><div class="scn">05</div><span class="si">✏️</span><div class="st2">Illustration</div><div class="sd">Custom hand-crafted illustrations and digital artwork that give your brand a unique personality.</div></div>
+    <div class="sc rv"><div class="scn">06</div><span class="si">📣</span><div class="st2">Advertising & Copywriting</div><div class="sd">Strategic ad concepts with sharp copy that converts curiosity into action — print and digital.</div></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="ct">
+  <div class="cring" style="width:700px;height:700px"></div>
+  <div class="cring" style="width:500px;height:500px;animation-duration:18s"></div>
+  <div class="cring" style="width:300px;height:300px;animation-duration:12s;animation-direction:reverse"></div>
+  <div style="position:relative;z-index:2">
+    <div class="cghost">CONNECT</div>
+    <div class="ctitle">LET'S BUILD<br>SOMETHING GREAT</div>
+    <p class="csub">Open to projects, collaborations &amp; conversations.</p>
+    <div class="cg">
+      <a href="tel:+9779864728714" class="cc"><div class="ci">📞</div><div><div class="cl">Call Directly</div><div class="cv2">+977 9864728714</div></div></a>
+      <a href="https://wa.me/9779864728714" target="_blank" class="cc"><div class="ci">💬</div><div><div class="cl">WhatsApp</div><div class="cv2">+977 9864728714</div></div></a>
+      <a href="mailto:khanalprashant17@gmail.com" class="cc"><div class="ci">✉️</div><div><div class="cl">Email</div><div class="cv2">khanalprashant17@gmail.com</div></div></a>
+      <a href="https://khanalprashant17-dot.github.io/prashantt-portfolio/" target="_blank" class="cc"><div class="ci">🌐</div><div><div class="cl">Portfolio</div><div class="cv2">View Online</div></div></a>
+    </div>
+    <p class="loc">📍 Srijananagar, Bhaktapur, Nepal</p>
+  </div>
+</section>
+
+<footer>
+  <span>© 2026 Prashant Khanal</span>
+  <span style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--gold)">PK.</span>
+  <a href="mailto:khanalprashant17@gmail.com">khanalprashant17@gmail.com</a>
+</footer>
+</div>
+
+<script>
+/* ─── CURSOR ─── */
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function loop(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop)})();
+document.querySelectorAll('a,button,.sc,.ti,.ctag').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hov'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));
+});
+
+/* ─── THREE.JS SETUP ─── */
+const canvas=document.getElementById('three-canvas');
+const W=()=>window.innerWidth, H=()=>window.innerHeight;
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(W(),H());
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.3;
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(42,W()/H(),.1,300);
+camera.position.set(0,1.8,8);
+camera.lookAt(0,0,0);
+
+/* Lights */
+scene.add(new THREE.AmbientLight(0xffffff,.25));
+const sun=new THREE.DirectionalLight(0xfff5e0,2.8); sun.position.set(6,10,5); sun.castShadow=true; scene.add(sun);
+const fill=new THREE.DirectionalLight(0x2244aa,.6); fill.position.set(-6,2,-5); scene.add(fill);
+const rim=new THREE.DirectionalLight(0xc8a84b,1.4); rim.position.set(0,4,-7); scene.add(rim);
+const uglow=new THREE.PointLight(0xc8a84b,1,7); uglow.position.set(0,-.5,0); scene.add(uglow);
+const spotlight=new THREE.SpotLight(0xffffff,.8,20,Math.PI/8,.5); spotlight.position.set(0,8,0); spotlight.castShadow=true; scene.add(spotlight);
+
+/* Ground */
+const grid=new THREE.GridHelper(40,40,0x1a1a28,0x111120); grid.position.y=-.88; scene.add(grid);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(40,40),new THREE.MeshStandardMaterial({color:0x06060a,roughness:1}));
+ground.rotation.x=-Math.PI/2; ground.position.y=-.89; ground.receiveShadow=true; scene.add(ground);
+
+/* ─── BMW CAR ─── */
+const car=new THREE.Group();
+
+// Shared materials
+const bmat=new THREE.MeshStandardMaterial({color:0x0a0a12,metalness:.95,roughness:.08});     // body
+const gmat=new THREE.MeshStandardMaterial({color:0x1a3a55,metalness:.2,roughness:.04,transparent:true,opacity:.55}); // glass
+const cmat=new THREE.MeshStandardMaterial({color:0xd0d0e0,metalness:1,roughness:.04});       // chrome
+const wmat=new THREE.MeshStandardMaterial({color:0x080810,roughness:.9});                     // tire
+const rmat=new THREE.MeshStandardMaterial({color:0x909098,metalness:.96,roughness:.08});      // rim
+const dkmat=new THREE.MeshStandardMaterial({color:0x3a3a50,metalness:.85,roughness:.25});     // dark chrome
+const hlmat=new THREE.MeshStandardMaterial({color:0xeeeeff,emissive:0x6688ff,emissiveIntensity:1.5,roughness:.1}); // headlight
+const drlmat=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:3}); // DRL
+const tailmat=new THREE.MeshStandardMaterial({color:0xff0000,emissive:0xcc0000,emissiveIntensity:.8});
+const goldmat=new THREE.MeshStandardMaterial({color:0xc8a84b,metalness:1,roughness:.08});
+
+function box(w,h,d,mat,x,y,z,rx=0,ry=0,rz=0){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+  m.position.set(x,y,z); m.rotation.set(rx,ry,rz); m.castShadow=true; return m;
+}
+function cyl(rt,rb,h,seg,mat,x,y,z,rx=0,ry=0,rz=0){
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),mat);
+  m.position.set(x,y,z); m.rotation.set(rx,ry,rz); m.castShadow=true; return m;
+}
+
+// ── Body lower chassis ──
+car.add(box(4.0,.44,1.72,bmat, 0,-.08,0));
+
+// Sills
+[-0.89,0.89].forEach(z=>car.add(box(3.7,.1,.11,dkmat, 0,-.36,z)));
+
+// ── Cabin (simplified extruded shape) ──
+// Front A-pillar region
+car.add(box(.18,.78,.08,dkmat,-1.12,.48,-.83));
+car.add(box(.18,.78,.08,dkmat,-1.12,.48,.83));
+// Roof
+car.add(box(1.55,.08,1.55,bmat,-.05,.95,0));
+// B-pillar
+[-0.08,.06].forEach(x=>{
+  car.add(box(.08,.76,.08,dkmat,x,.58,-.82));
+  car.add(box(.08,.76,.08,dkmat,x,.58,.82));
+});
+// Rear C-pillar
+car.add(box(.18,.72,.08,dkmat,.92,.5,-.82));
+car.add(box(.18,.72,.08,dkmat,.92,.5,.82));
+
+// Side body panels (bulge)
+[-0.87,0.87].forEach(z=>car.add(box(3.6,.52,.09,bmat,0,.18,z)));
+
+// Shoulder line chrome strip
+[-0.89,0.89].forEach(z=>car.add(box(3.4,.025,.025,dkmat,0,.35,z)));
+
+// ── Hood ──
+const hood=box(1.52,.05,1.66,bmat,-1.52,.2,0); hood.rotation.z=.09; car.add(hood);
+// Hood power dome (BMW M style)
+car.add(box(1.1,.06,.32,bmat,-1.5,.22,-.18));
+car.add(box(1.1,.06,.32,bmat,-1.5,.22,.18));
+
+// ── Trunk ──
+const trunk=box(.96,.05,1.66,bmat,1.46,.21,0); trunk.rotation.z=-.07; car.add(trunk);
+
+// ── Windshields & glass ──
+// Front windshield
+const fwg=new THREE.Mesh(new THREE.PlaneGeometry(1.48,.7),gmat); fwg.position.set(-.78,.76,0); fwg.rotation.set(.01,Math.PI/2,-.44); car.add(fwg);
+// Rear glass
+const rwg=new THREE.Mesh(new THREE.PlaneGeometry(1.42,.62),gmat); rwg.position.set(.96,.74,0); rwg.rotation.set(.01,Math.PI/2,.48); car.add(rwg);
+// Side windows (driver+passenger each side)
+[-.84,.84].forEach(z=>{
+  const sw=new THREE.Mesh(new THREE.PlaneGeometry(.52,.46),gmat); sw.position.set(-.16,.7,z); sw.rotation.set(Math.PI/2,0,0); car.add(sw);
+  const qw=new THREE.Mesh(new THREE.PlaneGeometry(.36,.38),gmat); qw.position.set(.52,.66,z); qw.rotation.set(Math.PI/2,0,0); car.add(qw);
+});
+
+// ── Front end ──
+car.add(box(.22,.32,1.76,bmat,-2.02,-.02,0)); // bumper main
+car.add(box(.08,.18,.04,cmat,-2.06,.1,0)); // number plate surround
+
+// BMW twin kidney grille
+[-.3,.3].forEach((z,i)=>{
+  const kg=new THREE.Mesh(new THREE.BoxGeometry(.07,.24,.24),cmat); kg.position.set(-2.06,.04,z*(i===0?-1:1)); car.add(kg);
+  for(let s=0;s<4;s++){const slat=box(.08,.025,.22,cmat,-2.06,-.07+s*.05,z*(i===0?-1:1)); car.add(slat);}
+});
+
+// Headlights
+[-.58,.58].forEach(z=>{
+  car.add(new THREE.Mesh(new THREE.BoxGeometry(.09,.16,.34),hlmat)); car.children[car.children.length-1].position.set(-2.02,.1,z);
+  car.add(new THREE.Mesh(new THREE.BoxGeometry(.05,.028,.34),drlmat)); car.children[car.children.length-1].position.set(-2.0,.22,z);
+  // LED signature line
+  car.add(new THREE.Mesh(new THREE.BoxGeometry(.04,.012,.26),drlmat)); car.children[car.children.length-1].position.set(-1.98,.18,z);
+});
+
+// ── Rear end ──
+car.add(box(.18,.28,1.74,bmat,2.04,-.05,0));
+// Tail lights
+[-.58,.58].forEach(z=>{
+  car.add(new THREE.Mesh(new THREE.BoxGeometry(.07,.14,.38),tailmat)); car.children[car.children.length-1].position.set(2.0,.1,z);
+  car.add(new THREE.Mesh(new THREE.BoxGeometry(.05,.025,.32),new THREE.MeshStandardMaterial({color:0xff8800,emissive:0xcc4400,emissiveIntensity:.5}))); car.children[car.children.length-1].position.set(2.0,.05,z);
+});
+
+// Trunk lip spoiler
+car.add(box(.04,.08,1.64,dkmat,1.88,.28,0));
+
+// Exhausts
+[-.22,.22].forEach(z=>{
+  car.add(cyl(.055,.055,.22,12,cmat,2.06,-.52,z,0,0,Math.PI/2));
+  car.add(cyl(.04,.04,.04,12,new THREE.MeshStandardMaterial({color:0x111120,roughness:.8}),2.17,-.52,z,0,0,Math.PI/2));
+});
+
+// BMW logo circles
+[[-1.42,.23,0,Math.PI/2,0,0],[2.06,.16,0,Math.PI/2,0,0]].forEach(([x,y,z,rx,ry,rz])=>{
+  car.add(cyl(.11,.11,.035,32,cmat,x,y,z,rx,ry,rz));
+});
+
+// Side mirrors
+[-.87,.87].forEach(z=>{
+  car.add(box(.22,.06,.06,bmat,-.92,.4,z*1.09));
+  car.add(box(.14,.1,.04,bmat,-.84,.4,z*1.14));
+});
+
+// Door handles chrome
+[-.6,.6].forEach(z=>{
+  car.add(box(.22,.04,.03,cmat,-.32,.28,z*1.0));
+  car.add(box(.22,.04,.03,cmat,.52,.28,z*1.0));
+});
+
+// ── Undercarriage detail ──
+car.add(box(3.6,.06,1.3,dkmat,0,-.36,0));
+
+// ── WHEELS ──
+const wpos=[[-1.35,-.56,-.96],[1.12,-.56,-.96],[-1.35,-.56,.96],[1.12,-.56,.96]];
+const wgroups=[];
+wpos.forEach(pos=>{
+  const wg=new THREE.Group();
+  // Tire
+  const tire=cyl(.39,.39,.27,32,wmat,0,0,0,Math.PI/2,0,0); wg.add(tire);
+  // Outer tire bead
+  wg.add(cyl(.39,.4,.05,32,new THREE.MeshStandardMaterial({color:0x181820,roughness:.95}),0,0,.12,Math.PI/2,0,0));
+  wg.add(cyl(.39,.4,.05,32,new THREE.MeshStandardMaterial({color:0x181820,roughness:.95}),0,0,-.12,Math.PI/2,0,0));
+  // Rim
+  wg.add(cyl(.28,.28,.29,16,rmat,0,0,0,Math.PI/2,0,0));
+  // 5 spokes
+  for(let s=0;s<5;s++){
+    const ang=(s/5)*Math.PI*2;
+    const spoke=box(.042,.48,.042,rmat,Math.sin(ang)*.12,0,Math.cos(ang)*.12,0,0,ang);
+    spoke.rotation.x=Math.PI/2; wg.add(spoke);
+  }
+  // Center hub + BMW logo
+  wg.add(cyl(.07,.07,.32,16,goldmat,0,0,0,Math.PI/2,0,0));
+  wg.add(cyl(.04,.04,.34,8,new THREE.MeshStandardMaterial({color:0x050510}),0,0,0,Math.PI/2,0,0));
+  // Brake disc
+  wg.add(cyl(.22,.22,.055,20,dkmat,0,0,.14,Math.PI/2,0,0));
+  // Brake caliper
+  const caliper=box(.08,.14,.08,new THREE.MeshStandardMaterial({color:0xcc2200,roughness:.6}),0,.2,.13); wg.add(caliper);
+
+  wg.position.set(...pos);
+  wgroups.push(wg);
+  car.add(wg);
+});
+
+car.position.y=0;
+scene.add(car);
+
+/* ─── PARTICLE FIELD ─── */
+const pN=1000, ppos=new Float32Array(pN*3);
+for(let i=0;i<pN;i++){ppos[i*3]=(Math.random()-.5)*50;ppos[i*3+1]=(Math.random()-.5)*24;ppos[i*3+2]=(Math.random()-.5)*50;}
+const pGeo=new THREE.BufferGeometry(); pGeo.setAttribute('position',new THREE.BufferAttribute(ppos,3));
+const particles=new THREE.Points(pGeo,new THREE.PointsMaterial({color:0xc8a84b,size:.045,transparent:true,opacity:.35,sizeAttenuation:true}));
+scene.add(particles);
+
+/* ─── DECORATIVE RINGS ─── */
+[2.8,4.0,5.5].forEach((r,i)=>{
+  const rm=new THREE.Mesh(new THREE.TorusGeometry(r,.008,8,90),new THREE.MeshStandardMaterial({color:0xc8a84b,metalness:.9,roughness:.2,transparent:true,opacity:.12-i*.03}));
+  rm.rotation.x=Math.PI/2; rm.position.y=-.88; scene.add(rm);
+});
+
+/* ─── SCROLL LOGIC ─── */
+const bmwSec=document.getElementById('bmws');
+let scrollY=0;
+window.addEventListener('scroll',()=>scrollY=window.scrollY);
+function progress(){
+  const top=bmwSec.offsetTop, h=bmwSec.clientHeight-window.innerHeight;
+  return Math.max(0,Math.min(1,(scrollY-top)/h));
+}
+
+/* ─── ANIMATION ─── */
+let t=0;
+function animate(){
+  requestAnimationFrame(animate); t+=.01;
+  const p=progress();
+
+  // Wheels spin
+  wgroups.forEach(w=>w.rotation.z-=.04);
+
+  // Scroll-driven car rotation + rise
+  car.rotation.y=p*Math.PI*2;
+  const baseY=Math.sin(p*Math.PI)*1.4;
+  car.position.y=baseY+Math.sin(t*.8)*.04;
+  car.rotation.z=Math.sin(t*.5)*.008;
+
+  // Camera arc on scroll
+  camera.position.x=Math.sin(p*Math.PI)*3;
+  camera.position.y=1.8+p*2;
+  camera.position.z=8-p*2.5;
+  camera.lookAt(0,.2,0);
+
+  // Undercar glow pulse + color shift
+  uglow.intensity=.5+Math.sin(t*2)*.35;
+  if(p>.5) uglow.color.setHex(0xff2200); else uglow.color.setHex(0xc8a84b);
+
+  // Particles drift
+  particles.rotation.y+=.0005; particles.rotation.x+=.0002;
+
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',()=>{
+  camera.aspect=W()/H(); camera.updateProjectionMatrix();
+  renderer.setSize(W(),H());
+});
+
+/* ─── REVEAL on scroll ─── */
+const rvEls=document.querySelectorAll('.rv');
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');obs.unobserve(e.target)}})},{threshold:.12});
+rvEls.forEach(el=>obs.observe(el));
+
+/* Skill bar animate */
+document.querySelectorAll('.sf').forEach(b=>{
+  const bo=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){setTimeout(()=>b.style.width=b.dataset.w,200);bo.unobserve(e.target)}})},{threshold:.5});
+  bo.observe(b);
+});
+
+/* Hero entrance */
+const hn=document.querySelector('.h-name');
+hn.style.cssText='opacity:0;transform:translateY(70px)';
+setTimeout(()=>{hn.style.transition='all 1.2s cubic-bezier(.23,1,.32,1)';hn.style.opacity='1';hn.style.transform='translateY(0)'},120);
+</script>
+</body>
+</html>
